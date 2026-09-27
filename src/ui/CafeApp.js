@@ -75,7 +75,7 @@ export class CafeApp {
     this.limitInput = this.root.querySelector('[data-limit]');
     this.message = this.root.querySelector('[data-message]');
 
-    this.menuList.addEventListener('click', this.handleMenuClick);
+    this.menuList.addEventListener('click', this.handleMenuClick.bind(this));
     this.orderLines.addEventListener('click', event => this.handleOrderLineClick(event));
     this.discountSelect.addEventListener('change', event => this.handleDiscountChange(event));
     this.checkoutButton.addEventListener('click', () => this.handleCheckout());
@@ -265,3 +265,7 @@ export class CafeApp {
     }
   }
 }
+
+
+// я выполнил эту задачу использовав буквально 2 слова в строке 78, я добавил к строке
+// bind - который создаёт новую функцию и в скобочказ this, который навсегда привязан к объекту

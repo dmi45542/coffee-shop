@@ -11,7 +11,29 @@ import { MenuItem } from './MenuItem.js';
  *                для обычного -- «Чизкейк — 250 руб.»
  */
 export class Dessert extends MenuItem {
+  #isVegan
+
   constructor(name, basePrice, isVegan = false) {
     super(name, basePrice);
+    this.#isVegan = isVegan
+  }
+
+  get isVegan() {
+    return this.#isVegan
+  }
+
+  getCategory() {
+    return 'Десерты'
+  }
+
+  describe() {
+    return this.isVegan
+      ? `${this.name} (веган) — ${this.price} руб.`
+      : `${this.name} — ${this.price} руб.`;
+  }
+
+  get displayName() {
+    return this.isVegan ? `${this.name} (веган)` : this.name
   }
 }
+

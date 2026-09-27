@@ -31,20 +31,58 @@ import { TRANSITIONS, ORDER_STATUS_LABELS } from './statuses.js';
  *                     Изменение этого массива не должно влиять на сервис.
  */
 export class OrderService extends EventEmitter {
+  #orders = new Map()
+
   createOrder(order) {
-    throw new Error('Задача 3: OrderService.createOrder ещё не реализован');
-  }
+    if (!(order instanceof Order)) {
+      throw new Error ('order должен быть экземпляром Order!')
+    }
+
+    if (order.itemsCount === 0) {
+      throw new Error ('пусой заказ оформить нельзя!')
+    }
+
+    for (const item of this.#orders.values()) {
+      if (item.order === order) {
+        throw new Error ('Заказ уже оформлен!')
+      }
+    }
+
+    this.#orders.set(order.id, {order, status: 'new'})
+
+    this.emit('orderCreated', {order})
+    this.log(`Создан заказ ${order.id}`)
+    return order.id
+}
 
   changeStatus(orderId, nextStatus) {
-    throw new Error('Задача 3: OrderService.changeStatus ещё не реализован');
+    const entry = this.#orders.get(orderId)
+    if (!entry) {
+      throw new Error (`Заказа нет или он неизвестен: ${orderId}`)
+    }
+
+    if (!TRANSITIONS[entry.status]?.includes(nextStatus)) {
+      throw new Error ('Нельзя так')
+    }
+
+    const from = entry.status
+    entry.status = nextStatus
+    this.emit('statusChanged', { 
+      order: entry.order, 
+      from, 
+      to: nextStatus 
+    });
+
+    this.log(`Заказ #${orderId}: ${from} → ${nextStatus}`);
+
   }
 
   getStatus(orderId) {
-    throw new Error('Задача 3: OrderService.getStatus ещё не реализован');
+    return this.#orders.get(orderId)?.status ?? null
   }
 
   getOrders() {
-    throw new Error('Задача 3: OrderService.getOrders ещё не реализован');
+    return [...this.#orders.values()]
   }
 }
 

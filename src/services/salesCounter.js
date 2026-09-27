@@ -1,3 +1,5 @@
+import { Order } from '../order/Order.js';
+
 /**
  * ЗАДАЧА 3.2. Подписчик: счётчик продаж.
  *
@@ -14,6 +16,43 @@
  *
  * Подсказка: on() у EventEmitter возвращает функцию отписки.
  */
+
 export function createSalesCounter(orderService) {
-  throw new Error('Задача 3: createSalesCounter ещё не реализован');
+  const counts = new Map()
+  
+  const offCreated = orderService.on('orderCreated', ({ order }) => {
+    for (const line of order.getLines()) {
+      const {item, quantity} = line;
+      counts.set(item.name, (counts.get(item.name) ?? 0) + quantity);
+    }
+  });
+
+  const offStatusChanged = orderService.on('statusChanged', ({order, to}) => {
+    if (to !== 'cancelled') {
+      return
+    }
+
+    for (const line of order.getLines()) {
+      const {item, quantity} = line;
+      counts.set(item.name, (counts.get(item.name) ?? 0) - quantity);
+    }
+  })
+
+  return {
+    getCount(name) {
+      return counts.get(name) ?? 0
+    },
+
+    getTop(limit = 3) {
+      return [...counts] // спред оператор создаёт копию и с ней можно работать как с копией массива чтобы не повредить оригинал
+        .map(([name, count]) => ({name, count}))
+        .sort((a, b) => b.count - a.count) // отсортировать по убыванию
+        .slice(0, limit) // первые лимит
+    },
+
+    unsubscribe() {
+      offCreated()
+      offStatusChanged()
+    }
+  }
 }

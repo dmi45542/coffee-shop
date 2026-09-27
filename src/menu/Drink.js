@@ -15,7 +15,37 @@ import { MenuItem } from './MenuItem.js';
 export const SIZE_MULTIPLIERS = { S: 0.8, M: 1, L: 1.3 };
 
 export class Drink extends MenuItem {
+  #size
+
   constructor(name, basePrice, size = 'M') {
     super(name, basePrice);
+    this.size = size
+  }
+
+  get size() {
+    return this.#size
+  }
+
+  set size(value) {
+    if (value !== 'S' && value !== 'M' && value !== 'L') {
+      throw new Error ('Размер должен быть в допустимом значении!')
+    }
+    this.#size = value
+  }
+
+  get price () {
+    return Math.round(this.basePrice * SIZE_MULTIPLIERS[this.size]);
+  }
+
+  get displayName() {
+    return `${this.name} (${this.size})`
+  }
+
+  getCategory() {
+    return 'Напитки'
+  }
+
+  describe() {
+    return `${this.name} (${this.size}) — ${this.price} руб.`
   }
 }

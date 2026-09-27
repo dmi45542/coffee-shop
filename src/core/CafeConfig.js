@@ -1,19 +1,45 @@
 // ЗАДАЧА 4. Код работает, но с ошибками. Подробности в TASK.md.
 export class CafeConfig {
+  static #instance
+  #settings = {
+    cafeName: 'Кофейня «Зерно»',
+    maxItemsPerOrder: 10,
+    loyaltyPercent: 10,
+    happyHourPercent: 20,
+  };
+
   constructor() {
-    this.settings = {
-      cafeName: 'Кофейня «Зерно»',
-      maxItemsPerOrder: 10,
-      loyaltyPercent: 10,
-      happyHourPercent: 20,
-    };
+    if (CafeConfig.#instance) return CafeConfig.#instance
+    else CafeConfig.#instance = this
   }
 
   get(key) {
-    return this.settings[key];
+    return this.#settings[key];
   }
 
   set(key, value) {
-    this.settings[key] = value;
+    if (!(key in this.#settings)) {
+      throw new Error (`Неизвестный ключ! ${key}`)
+    }
+    this.#settings[key] = value
+  }
+
+  getAll() {
+    return {...this.#settings}
   }
 }
+
+// проблема была с тем, что если пользователь бы вводил какой то ключ, которого нет в 
+// списке, то была бы ошибка и оно бы никак не проверялось, теперь ключ проверяется и выводит 
+// Неизвестный ключ! ${key} если ключ не найдет 
+
+// так же ещё была проблема в том, что settings был не приватным полем, и его можно было легко 
+// менять, а так как это сами по себе настройки, то их менять нельзя, поэтому я сделал это поле 
+// приватным так же, как и поле instance 
+
+// я использовал принцип инкапсуляции, которое скрывает внутренне состояние с помощью приватных полей
+// и попасть к ним можно только через методы 
+// так же я применил паттерн SingleTon - использует один экземпляр на весь код (приложение), в нашем случае
+// это instance 
+
+// я выбрал это решение потому что оно мне больше понятно и как мне кажется оно сюда подходит как никогда

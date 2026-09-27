@@ -1,6 +1,4 @@
 import { CafeConfig } from '../core/CafeConfig.js';
-import { Dessert } from '../menu/Dessert.js';
-import { Drink } from '../menu/Drink.js';
 
 // ЗАДАЧА 6. Код работает, но его нужно переписать. Подробности в TASK.md.
 
@@ -11,15 +9,7 @@ export class ReceiptPrinter {
     const config = new CafeConfig();
 
     const lines = order.getLines().map(({ item, quantity }) => {
-      let title;
-
-      if (item instanceof Drink) {
-        title = `${item.name} (${item.size})`;
-      } else if (item instanceof Dessert) {
-        title = item.isVegan ? `${item.name} (веган)` : item.name;
-      } else {
-        title = item.name;
-      }
+      let title = item.displayName
 
       return `${title} x${quantity} = ${item.price * quantity} руб.`;
     });
@@ -36,3 +26,13 @@ export class ReceiptPrinter {
     ].join('\n');
   }
 }
+
+
+// я использовал принцип ООП - полиморфизм - у всех классов есть общий какой то геттер
+// в нашем случае это displayName
+// Я добавил этот геттер в файлы - MenuItem.js, Drink.js и Dessert.js. А попадают эти геттеры в файл
+// ReceiptPrinter с помощью наследования
+// если бы я не исправил эту проблему, то при появлении нового продукта, то каждый раз пришлось бы 
+// перезаписывать код и добавлять всё больше и больше информации в принтер, а это нам не надо поскольку это только усложняет код и делает его больше и не
+// не понятнее для глаз тех, кто будет в будущем этот код просматривать 
+

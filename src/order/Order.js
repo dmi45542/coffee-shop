@@ -1,5 +1,5 @@
 import { CafeConfig } from '../core/CafeConfig.js';
-import { Drink } from '../menu/Drink.js';
+import { NoDiscount } from '../discounts/index.js';
 import { MenuItem } from '../menu/MenuItem.js';
 
 // Заказ -- пример композиции: он не наследует позиции меню, а хранит их.
@@ -9,8 +9,7 @@ export class Order {
 
   #id;
   #lines = [];
-
-  discountType = 'none';
+  #discount = new NoDiscount()
 
   constructor() {
     this.#id = Order.#nextId++;
@@ -18,6 +17,10 @@ export class Order {
 
   get id() {
     return this.#id;
+  }
+
+  setDiscount(strategy) {
+    this.#discount = strategy
   }
 
   addItem(item, quantity = 1) {
@@ -58,32 +61,20 @@ export class Order {
   }
 
   get discount() {
-    const config = new CafeConfig();
-    let discount = 0;
-
-    if (this.discountType === 'none') {
-      discount = 0;
-    } else if (this.discountType === 'loyalty') {
-      discount = Math.round((this.subtotal * config.get('loyaltyPercent')) / 100);
-    } else if (this.discountType === 'happyHour') {
-      let drinksSum = 0;
-      for (const line of this.#lines) {
-        if (line.item instanceof Drink) {
-          drinksSum += line.item.price * line.quantity;
-        }
-      }
-      discount = Math.round((drinksSum * config.get('happyHourPercent')) / 100);
-    } else if (this.discountType === 'bigOrder') {
-      discount = this.itemsCount >= 5 ? 150 : 0;
-    } else {
-      throw new Error(`Неизвестный тип скидки: ${this.discountType}`);
-    }
-
-    // Скидка не может быть больше суммы заказа
-    return Math.min(discount, this.subtotal);
+    return Math.min(this.#discount.calculate(this), this.subtotal);
   }
 
   get total() {
     return this.subtotal - this.discount;
   }
 }
+
+// в данном файле я убрал иф элсы, поскольку это было неправильным решением и могло привести к тому, что приходилось
+// править класс Order, если вдруг допустим была бы задача добавить скидку студентам или прочее. Я 
+// и организовал их в паттерне "стратегия" в файле index.js, который включает в себя создание нескольких классов
+// под каждый метод, тем самым код стал правильным и визуально понятным.
+
+// использовал паттерн - стратегия
+
+// я выбрал этот паттерн потому что он хорошо заменяет иф елсе, упрощает его как и по моему мнению
+// функционально так и становится понятым визуально (всё как по полочкам, по классам)
